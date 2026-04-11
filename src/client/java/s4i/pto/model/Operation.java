@@ -13,11 +13,9 @@ import net.minecraft.entity.projectile.thrown.ThrownEntity;
  * @see Constants#RANGED_OPERATION_ORDER
  * @see Constants#THROWABLE_OPERATION_ORDER
  */
-public enum OperationOrder {
+public enum Operation {
     VELOCITY,
     DRAG,
-    WATER_DRAG,
-    AIR_DRAG,
     POSITION,
     INITIAL_THROWN_BUBBLE_COLLISION,
     BLOCK_COLLISION,

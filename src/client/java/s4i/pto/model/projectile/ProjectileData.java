@@ -2,7 +2,7 @@ package s4i.pto.model.projectile;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
-import s4i.pto.model.OperationOrder;
+import s4i.pto.model.Operation;
 import s4i.pto.utils.Utils;
 
 import java.util.List;
@@ -21,7 +21,7 @@ public class ProjectileData {
     private float waterDrag;
     private float charge;
     private float inaccuracy;
-    private List<OperationOrder> operationOrder;
+    private List<Operation> operationOrder;
     private Class<?> itemClassFiredFrom;
     private Entity entity;
     private boolean isInFluid;
@@ -188,7 +188,7 @@ public class ProjectileData {
         return charge;
     }
 
-    public List<OperationOrder> getOperationOrder() {
+    public List<Operation> getOperationOrder() {
         return operationOrder;
     }
 
@@ -238,7 +238,7 @@ public class ProjectileData {
         private float waterDrag;
         private float charge = 1.0f;
         private float inaccuracy = 0f;
-        private List<OperationOrder> operationOrder;
+        private List<Operation> operationOrder;
         private Class<?> itemClassFrom;
         private Entity entity;
         private final boolean isInFluid = false;
@@ -285,7 +285,7 @@ public class ProjectileData {
             return this;
         }
 
-        public Builder operationOrder(List<OperationOrder> operationOrder) {
+        public Builder operationOrder(List<Operation> operationOrder) {
             this.operationOrder = operationOrder;
             return this;
         }

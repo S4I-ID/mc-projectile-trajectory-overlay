@@ -2,16 +2,16 @@ package s4i.pto.model;
 
 import java.util.List;
 
-import static s4i.pto.model.OperationOrder.BLOCK_COLLISION;
-import static s4i.pto.model.OperationOrder.BLOCK_RAYCAST;
-import static s4i.pto.model.OperationOrder.DRAG;
-import static s4i.pto.model.OperationOrder.ENTITY_COLLISION;
-import static s4i.pto.model.OperationOrder.FISHING_BOBBER;
-import static s4i.pto.model.OperationOrder.LIFETIME_UPDATE;
-import static s4i.pto.model.OperationOrder.POSITION;
-import static s4i.pto.model.OperationOrder.ROTATION;
-import static s4i.pto.model.OperationOrder.UPDATE_WATER_STATE;
-import static s4i.pto.model.OperationOrder.VELOCITY;
+import static s4i.pto.model.Operation.BLOCK_COLLISION;
+import static s4i.pto.model.Operation.BLOCK_RAYCAST;
+import static s4i.pto.model.Operation.DRAG;
+import static s4i.pto.model.Operation.ENTITY_COLLISION;
+import static s4i.pto.model.Operation.FISHING_BOBBER;
+import static s4i.pto.model.Operation.LIFETIME_UPDATE;
+import static s4i.pto.model.Operation.POSITION;
+import static s4i.pto.model.Operation.ROTATION;
+import static s4i.pto.model.Operation.UPDATE_WATER_STATE;
+import static s4i.pto.model.Operation.VELOCITY;
 
 public class Constants {
     public static final String MOD_ID = "projectile-trajectory-overlay";
@@ -71,12 +71,12 @@ public class Constants {
 
     public static final double FIREWORK_EXPLOSION_RANGE = 5.0d;
 
-    public static final List<OperationOrder> THROWABLE_OPERATION_ORDER =
+    public static final List<Operation> THROWABLE_OPERATION_ORDER =
             List.of(VELOCITY, DRAG, POSITION, ROTATION, BLOCK_COLLISION, UPDATE_WATER_STATE, ENTITY_COLLISION, BLOCK_RAYCAST);
-    public static final List<OperationOrder> RANGED_OPERATION_ORDER =
+    public static final List<Operation> RANGED_OPERATION_ORDER =
             List.of(POSITION, DRAG, ROTATION, VELOCITY, BLOCK_COLLISION, UPDATE_WATER_STATE, ENTITY_COLLISION, BLOCK_RAYCAST);
-    public static final List<OperationOrder> FIREWORK_OPERATION_ORDER =
+    public static final List<Operation> FIREWORK_OPERATION_ORDER =
             List.of(POSITION, ENTITY_COLLISION, BLOCK_RAYCAST, LIFETIME_UPDATE);
-    public static final List<OperationOrder> FISHING_BOBBER_OPERATION_ORDER =
+    public static final List<Operation> FISHING_BOBBER_OPERATION_ORDER =
             List.of(FISHING_BOBBER, VELOCITY, BLOCK_COLLISION, ROTATION, DRAG, POSITION, UPDATE_WATER_STATE, ENTITY_COLLISION, BLOCK_RAYCAST);
 }

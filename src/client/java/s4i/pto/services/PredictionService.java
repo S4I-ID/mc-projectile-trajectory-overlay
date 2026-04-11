@@ -40,7 +40,7 @@ import s4i.pto.config.ModConfig;
 import s4i.pto.mixins.EntityAccessor;
 import s4i.pto.model.Constants;
 import s4i.pto.model.LineSource;
-import s4i.pto.model.OperationOrder;
+import s4i.pto.model.Operation;
 import s4i.pto.model.OperationResult;
 import s4i.pto.model.projectile.ProjectileData;
 import s4i.pto.model.simulation.Line;
@@ -157,21 +157,9 @@ public class PredictionService {
         raycastEntity.setPitch(projectileData.getPitch());
 
         for (int tick = 0; tick < config.maxNumberOfTicksToSimulate; tick++) {
-            for (OperationOrder operation : projectileData.getOperationOrder()) {
+            for (Operation operation : projectileData.getOperationOrder()) {
                 OperationResult result = switch (operation) {
                     case DRAG -> applyDrag(projectileData);
-                    case WATER_DRAG -> {
-                        if(projectileData.isInFluid()) {
-                            projectileData.setVelocity(projectileData.getVelocity().multiply(projectileData.getWaterDrag()));
-                        }
-                        yield OperationResult.CONTINUE;
-                    }
-                    case AIR_DRAG -> {
-                        if(!projectileData.isInFluid()) {
-                            projectileData.setVelocity(projectileData.getVelocity().multiply(projectileData.getAirDrag()));
-                        }
-                        yield OperationResult.CONTINUE;
-                    }
                     case VELOCITY -> applyVelocity(projectileData);
                     case POSITION -> applyPosition(projectileData);
                     case INITIAL_THROWN_BUBBLE_COLLISION -> applyInitialThrownEntityBubbleColumnCollision(projectileData, tick);
