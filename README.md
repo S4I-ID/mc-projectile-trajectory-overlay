@@ -2,7 +2,6 @@
   <img src="src/main/resources/assets/projectile-trajectory-overlay/icon.png" width="128" height="128" alt="Logo">
   <div>
     <h1>S4I's Projectile Trajectory Overlay</h1>
-    <h3>(Minecraft mod) Displays trajectories for projectiles fired/thrown by players.</h3>
   </div>
 </div>
 
@@ -71,7 +70,7 @@ In the `Issues` tab it goes.
 ~~Works fine on my machine.~~ But if it doesn't on yours, there is a performance tab in the settings, 
 turn some of the more computationally expensive features off.
 
-### But I'm too lazy to install it, how does it look like?
+### But I'm too lazy to install it, what does it look like?
   <img src="docs/example1.png" alt="Example pic 1">
   <img src="docs/example2.png" alt="Example pic 2">
   <img src="docs/example3.png" alt="Example pic 3">
