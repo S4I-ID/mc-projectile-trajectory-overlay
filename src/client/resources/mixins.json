@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "s4i.pto.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "EntityAccessor",
+    "FireworkRocketEntityAccessor",
+    "PersistentProjectileEntityAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

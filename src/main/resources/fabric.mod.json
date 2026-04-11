@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "projectile-trajectory-overlay",
+	"version": "${version}",
+	"name": "Projectile Trajectory Overlay",
+	"description": "Displays trajectories for projectiles fired/thrown by players.",
+	"authors": [
+		"s4i-id",
+		"Cristi1324"
+	],
+	"contact": {
+		"sources": "https://github.com/s4i-id/mc-projectile-trajectory-overlay"
+	},
+	"icon": "assets/projectile-trajectory-overlay/icon.png",
+	"environment": "*",
+	"mixins": [
+		"mixins.json"
+	],
+	"entrypoints": {
+		"client": [
+          "s4i.pto.ProjectileOverlayClient"
+		],
+		"modmenu": [
+			"s4i.pto.config.ModMenuApiImpl"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.18.3",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"custom": {
+		"modmenu": {
+			"update_checker": false
+		}
+	}
+}
