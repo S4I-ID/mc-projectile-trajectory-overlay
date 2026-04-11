@@ -1,8 +1,6 @@
 <div style="display: flex; align-items: center; gap: 40px;">
   <img src="src/main/resources/assets/projectile-trajectory-overlay/icon.png" width="128" height="128" alt="Logo">
-  <div>
-    <h1>S4I's Projectile Trajectory Overlay</h1>
-  </div>
+  <h1>S4I's Projectile Trajectory Overlay</h1>
 </div>
 
 ## ℹ️ Features
@@ -29,12 +27,11 @@ You can also manually acces the config file under
 `your-minecraft-installation-path/config/s4i-projectile-trajectory-overlay.json`, but I do not recommend it.
 
 ## ⚠️ Incompatible mods
-- **Any mods which disable the debug render layers**
+- Any mods which disable the debug render layers
 - Entity multithreading optimization mods might not play nice with this one (haven't tested yet)
 
 ## 🚧 Disclaimer
-Using this mod in multiplayer servers is considered cheating and might break their rules.
-I recommend using this mod in singleplayer only.
+**Mod will not work in multiplayer servers, only in singleplayer worlds.**
 
 Use this mod on multiplayer servers at your own risk, I take no responsibility or liability for any action taken
 against your Minecraft account.

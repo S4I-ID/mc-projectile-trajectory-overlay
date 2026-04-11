@@ -32,19 +32,14 @@ public class ProjectileOverlayClient implements ClientModInitializer {
 
         OrchestratorService orchestrator = OrchestratorService.getInstance();
 
-        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-            try {
-                projectileOverlayEvent(context, orchestrator, config);
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
-        });
+        WorldRenderEvents.AFTER_ENTITIES.register(context -> projectileOverlayEvent(context, orchestrator, config));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (ModKeyMappings.PROJECTILE_OVERLAY_TOGGLE.wasPressed()) {
                 config.toggleRenderProjectileLine();
             }
         });
+
         log.debug("S4I's Projectile Trajectory Overlay is loaded! :D");
     }
 
@@ -55,23 +50,38 @@ public class ProjectileOverlayClient implements ClientModInitializer {
      * @param config       this mod's configuration data (the options you see with ModMenu)
      */
     private void projectileOverlayEvent(WorldRenderContext context, OrchestratorService orchestrator, ModConfig config) {
-        PlayerEntity player = client.player;
-        if (config.showProjectileTrajectoryForSelf && player != null) {
-            orchestrator.resolveEntityTrajectoryPrediction(context, player, LineSource.SELF);
+        if (!isClientOnSingleplayerWorld()) {
+            return;
         }
-        if (config.showProjectileTrajectoriesFromOtherPlayers && player != null) {
-            Stream.ofNullable(client.world.getOtherEntities(player, new Box(player.getBlockPos()).expand(config.searchRadius)))
-                    .flatMap(Collection::stream)
-                    .filter(entity -> entity.isAlive() && !entity.isSpectator() && entity.isPlayer())
-                    .forEach(entity -> {
-                        PlayerEntity foundPlayer = (PlayerEntity) entity.getEntity();
-                        if (foundPlayer != null) {
-                            orchestrator.resolveEntityTrajectoryPrediction(context, foundPlayer, LineSource.PLAYER);
-                        }
-                    });
+
+        try {
+            PlayerEntity player = client.player;
+            if (config.showProjectileTrajectoryForSelf && player != null) {
+                orchestrator.resolveEntityTrajectoryPrediction(context, player, LineSource.SELF);
+            }
+            if (config.showProjectileTrajectoriesFromOtherPlayers && player != null) {
+                Stream.ofNullable(client.world.getOtherEntities(player, new Box(player.getBlockPos()).expand(config.searchRadius)))
+                        .flatMap(Collection::stream)
+                        .filter(entity -> entity.isAlive() && !entity.isSpectator() && entity.isPlayer())
+                        .forEach(entity -> {
+                            PlayerEntity foundPlayer = (PlayerEntity) entity.getEntity();
+                            if (foundPlayer != null) {
+                                orchestrator.resolveEntityTrajectoryPrediction(context, foundPlayer, LineSource.PLAYER);
+                            }
+                        });
+            }
+            if (config.showAlreadyFiredProjectileTrajectories && player != null) {
+                orchestrator.resolveFiredProjectilesTrajectoryPrediction(context, LineSource.PROJECTILE);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
-        if (config.showAlreadyFiredProjectileTrajectories && player != null) {
-            orchestrator.resolveFiredProjectilesTrajectoryPrediction(context, LineSource.PROJECTILE);
-        }
+    }
+
+    /**
+     * Checks if game client is in singleplayer world or not
+     */
+    private static boolean isClientOnSingleplayerWorld() {
+        return client.isInSingleplayer();
     }
 }
