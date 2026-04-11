@@ -107,7 +107,6 @@ public class OrchestratorService {
     }
 
     public void resolveFiredProjectilesTrajectoryPrediction(WorldRenderContext context, LineSource lineSource) {
-        float tickProgress = client.getRenderTickCounter().getTickProgress(false);
         PlayerEntity player = client.player;
 
         List<ProjectileData> projectileList = Stream.ofNullable(client.world
