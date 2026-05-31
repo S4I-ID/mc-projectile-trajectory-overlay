@@ -1,25 +1,26 @@
 package s4i.pto.services.initializers;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.projectile.ArrowEntity;
-import net.minecraft.entity.projectile.FireworkRocketEntity;
-import net.minecraft.entity.projectile.FishingBobberEntity;
-import net.minecraft.entity.projectile.TridentEntity;
-import net.minecraft.entity.projectile.thrown.ExperienceBottleEntity;
-import net.minecraft.entity.projectile.thrown.SnowballEntity;
-import net.minecraft.entity.projectile.thrown.SplashPotionEntity;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.CrossbowItem;
-import net.minecraft.item.EnderPearlItem;
-import net.minecraft.item.ExperienceBottleItem;
-import net.minecraft.item.FishingRodItem;
-import net.minecraft.item.PotionItem;
-import net.minecraft.item.SnowballItem;
-import net.minecraft.item.TridentItem;
-import net.minecraft.util.math.Vec3d;
+
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.projectile.FireworkRocketEntity;
+import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownExperienceBottle;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.EnderpearlItem;
+import net.minecraft.world.item.ExperienceBottleItem;
+import net.minecraft.world.item.FishingRodItem;
+import net.minecraft.world.item.PotionItem;
+import net.minecraft.world.item.SnowballItem;
+import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.phys.Vec3;
+import s4i.pto.mixins.AbstractArrowAccessor;
 import s4i.pto.mixins.FireworkRocketEntityAccessor;
-import s4i.pto.mixins.PersistentProjectileEntityAccessor;
 import s4i.pto.model.Constants;
 import s4i.pto.model.projectile.ProjectileData;
 import s4i.pto.model.projectile.ProjectileSpawnData;
@@ -34,18 +35,18 @@ public interface VanillaProjectileEntityInitializer {
 
     static VanillaProjectileEntityInitializer Arrow() {
         return (projectile) -> {
-            PersistentProjectileEntityAccessor arrowEntity = (PersistentProjectileEntityAccessor) projectile;
+            AbstractArrowAccessor arrowEntity = (AbstractArrowAccessor) projectile;
             float charge = arrowEntity.isStopped() ? 0.0f : 1.0f;
-            return new ProjectileData.Builder()
+            return ProjectileData.builder()
                     .projectileSpawnData(new ProjectileSpawnData(projectile))
-                    .gravityVelocity(new Vec3d(0, Constants.PERSISTENT_PROJECTILE_GRAVITY, 0))
+                    .gravityVelocity(new Vec3(0, Constants.PERSISTENT_PROJECTILE_GRAVITY, 0))
                     .airDrag(Constants.PERSISTENT_PROJECTILE_AIR_DRAG)
                     .waterDrag(Constants.PERSISTENT_PROJECTILE_WATER_DRAG)
                     .charge(charge)
                     .operationOrder(RANGED_OPERATION_ORDER)
-                    .position(projectile.getEntityPos())
-                    .entity(new ArrowEntity(EntityType.ARROW, projectile.getEntityWorld()))
-                    .itemClassFrom(BowItem.class)
+                    .position(projectile.position())
+                    .entity(new Arrow(EntityType.ARROW, projectile.level()))
+                    .itemClassFiredFrom(BowItem.class)
                     .build();
         };
     }
@@ -54,17 +55,17 @@ public interface VanillaProjectileEntityInitializer {
         return (projectile) -> {
             FireworkRocketEntityAccessor firework = (FireworkRocketEntityAccessor) projectile;
             int explosions = firework.getExplosiveCharges().size();
-            return new ProjectileData.Builder()
+            return ProjectileData.builder()
                     .projectileSpawnData(new ProjectileSpawnData(projectile))
-                    .gravityVelocity(new Vec3d(0, Constants.FIREWORK_GRAVITY, 0))
+                    .gravityVelocity(new Vec3(0, Constants.FIREWORK_GRAVITY, 0))
                     .airDrag(1.0f)
                     .waterDrag(1.0f)
-                    .position(projectile.getEntityPos())
+                    .position(projectile.position())
                     .operationOrder(FIREWORK_OPERATION_ORDER)
-                    .itemClassFrom(CrossbowItem.class)
-                    .entity(new FireworkRocketEntity(EntityType.FIREWORK_ROCKET, projectile.getEntityWorld()))
+                    .itemClassFiredFrom(CrossbowItem.class)
+                    .entity(new FireworkRocketEntity(EntityType.FIREWORK_ROCKET, projectile.level()))
                     .forceHighlightBlock(true)
-                    .ticksLeft(firework.getLifeTime() - firework.getLife())
+                    .ticksLeft(firework.getLifetime() - firework.getLife())
                     .tickDeviation(0)
                     .isExplosive(true)
                     .explosions(explosions)
@@ -74,18 +75,18 @@ public interface VanillaProjectileEntityInitializer {
 
     static VanillaProjectileEntityInitializer Trident() {
         return (projectile) -> {
-            PersistentProjectileEntityAccessor tridentEntity = (PersistentProjectileEntityAccessor) projectile;
+            AbstractArrowAccessor tridentEntity = (AbstractArrowAccessor) projectile;
             float charge = tridentEntity.isStopped() ? 0.0f : 1.0f;
-            return new ProjectileData.Builder()
+            return ProjectileData.builder()
                     .projectileSpawnData(new ProjectileSpawnData(projectile))
-                    .gravityVelocity(new Vec3d(0, Constants.PERSISTENT_PROJECTILE_GRAVITY, 0))
+                    .gravityVelocity(new Vec3(0, Constants.PERSISTENT_PROJECTILE_GRAVITY, 0))
                     .airDrag(Constants.PERSISTENT_PROJECTILE_AIR_DRAG)
                     .waterDrag(Constants.TRIDENT_WATER_DRAG)
                     .charge(charge)
-                    .position(projectile.getEntityPos())
+                    .position(projectile.position())
                     .operationOrder(RANGED_OPERATION_ORDER)
-                    .itemClassFrom(TridentItem.class)
-                    .entity(new TridentEntity(EntityType.TRIDENT, projectile.getEntityWorld()))
+                    .itemClassFiredFrom(TridentItem.class)
+                    .entity(new ThrownTrident(EntityType.TRIDENT, projectile.level()))
                     .build();
         };
     }
@@ -93,34 +94,34 @@ public interface VanillaProjectileEntityInitializer {
     static VanillaProjectileEntityInitializer EnderPearl() {
         return ((projectile) -> {
             ProjectileData projectileData = createDefaultThrowableData(projectile);
-            projectileData.setItemClassFiredFrom(EnderPearlItem.class);
+            projectileData.setItemClassFiredFrom(EnderpearlItem.class);
             return projectileData;
         });
     }
 
     static VanillaProjectileEntityInitializer ExperienceBottle() {
-        return (projectile) -> new ProjectileData.Builder()
+        return (projectile) -> ProjectileData.builder()
                 .projectileSpawnData(new ProjectileSpawnData(projectile))
-                .gravityVelocity(new Vec3d(0, Constants.EXP_BOTTLE_GRAVITY, 0))
+                .gravityVelocity(new Vec3(0, Constants.EXP_BOTTLE_GRAVITY, 0))
                 .airDrag(Constants.THROWABLE_AIR_DRAG)
                 .waterDrag(Constants.THROWABLE_WATER_DRAG)
-                .position(projectile.getEntityPos())
+                .position(projectile.position())
                 .operationOrder(THROWABLE_OPERATION_ORDER)
-                .entity(new ExperienceBottleEntity(EntityType.EXPERIENCE_BOTTLE, projectile.getEntityWorld()))
-                .itemClassFrom(ExperienceBottleItem.class)
+                .entity(new ThrownExperienceBottle(EntityType.EXPERIENCE_BOTTLE, projectile.level()))
+                .itemClassFiredFrom(ExperienceBottleItem.class)
                 .build();
     }
 
     static VanillaProjectileEntityInitializer ThrowablePotion() {
-        return (projectile) -> new ProjectileData.Builder()
+        return (projectile) -> ProjectileData.builder()
                 .projectileSpawnData(new ProjectileSpawnData(projectile))
-                .gravityVelocity(new Vec3d(0, Constants.POTION_GRAVITY, 0))
+                .gravityVelocity(new Vec3(0, Constants.POTION_GRAVITY, 0))
                 .airDrag(Constants.THROWABLE_AIR_DRAG)
                 .waterDrag(Constants.THROWABLE_WATER_DRAG)
-                .position(projectile.getEntityPos())
+                .position(projectile.position())
                 .operationOrder(THROWABLE_OPERATION_ORDER)
-                .entity(new SplashPotionEntity(EntityType.SPLASH_POTION, projectile.getEntityWorld()))
-                .itemClassFrom(PotionItem.class)
+                .entity(new ThrownSplashPotion(EntityType.SPLASH_POTION, projectile.level()))
+                .itemClassFiredFrom(PotionItem.class)
                 .build();
     }
 
@@ -129,33 +130,33 @@ public interface VanillaProjectileEntityInitializer {
     }
 
     private static ProjectileData createDefaultThrowableData(Entity projectile) {
-        return new ProjectileData.Builder()
+        return ProjectileData.builder()
                 .projectileSpawnData(new ProjectileSpawnData(projectile))
-                .gravityVelocity(new Vec3d(0, Constants.THROWABLE_GRAVITY, 0))
+                .gravityVelocity(new Vec3(0, Constants.THROWABLE_GRAVITY, 0))
                 .airDrag(Constants.THROWABLE_AIR_DRAG)
                 .waterDrag(Constants.THROWABLE_WATER_DRAG)
-                .position(projectile.getEntityPos())
+                .position(projectile.position())
                 .operationOrder(THROWABLE_OPERATION_ORDER)
-                .entity(new SnowballEntity(EntityType.SNOWBALL, projectile.getEntityWorld()))
-                .itemClassFrom(SnowballItem.class)
+                .entity(new Snowball(EntityType.SNOWBALL, projectile.level()))
+                .itemClassFiredFrom(SnowballItem.class)
                 .build();
     }
 
     static VanillaProjectileEntityInitializer FishingBobber() {
-        return (projectile) -> new ProjectileData.Builder()
+        return (projectile) -> ProjectileData.builder()
                 .projectileSpawnData(new ProjectileSpawnData(projectile))
-                .gravityVelocity(new Vec3d(0, Constants.THROWABLE_GRAVITY, 0))
+                .gravityVelocity(new Vec3(0, Constants.THROWABLE_GRAVITY, 0))
                 .airDrag(Constants.FISHING_BOBBER_DRAG)
                 .waterDrag(Constants.FISHING_BOBBER_DRAG)
-                .position(projectile.getEntityPos())
+                .position(projectile.position())
                 .operationOrder(FISHING_BOBBER_OPERATION_ORDER)
-                .entity(new FishingBobberEntity(EntityType.FISHING_BOBBER, projectile.getEntityWorld()))
+                .entity(new FishingHook(EntityType.FISHING_BOBBER, projectile.level()))
                 .forceHighlightBlock(true)
-                .itemClassFrom(FishingRodItem.class)
+                .itemClassFiredFrom(FishingRodItem.class)
                 .build();
     }
 
     static VanillaProjectileEntityInitializer Null() {
-        return (projectile -> null);
+        return (_ -> null);
     }
 }

@@ -1,15 +1,17 @@
 package s4i.pto.model;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.entity.projectile.thrown.ThrownEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ThrowableProjectile;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 
 /**
  * <p> Abstracted projectile updates during a tick </p>
  * <p> Since 1.21, most items have a different order in which these are calculated per tick </p>
  * @see Entity#tick()
- * @see PersistentProjectileEntity#tick()
- * @see ThrownEntity#tick()
+ * @see Projectile#tick()
+ * @see AbstractArrow#tick()
+ * @see ThrowableProjectile#tick()
  * @see Constants#RANGED_OPERATION_ORDER
  * @see Constants#THROWABLE_OPERATION_ORDER
  */

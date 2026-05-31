@@ -1,16 +1,18 @@
 package s4i.pto.model.simulation;
 
-import net.minecraft.util.math.Vec3d;
+import lombok.Getter;
+import net.minecraft.world.phys.Vec3;
 import s4i.pto.model.Color4f;
 import s4i.pto.model.LineSource;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class Line {
-    private List<LineSegment> segments;
-    private int deviationId;
-    private LineSource lineSource;
+    private final List<LineSegment> segments;
+    private final int deviationId;
+    private final LineSource lineSource;
 
     public Line(int deviationId, LineSource lineSource) {
         this.segments = new ArrayList<>();
@@ -18,7 +20,7 @@ public class Line {
         this.lineSource = lineSource;
     }
 
-    public void addVertex(Vec3d startPos, Vec3d endPos, Color4f color) {
+    public void addVertex(Vec3 startPos, Vec3 endPos, Color4f color) {
         this.segments.add(LineSegment.of(startPos, endPos, color));
     }
 
@@ -26,17 +28,5 @@ public class Line {
         if (this.segments.size() > 1) {
             this.segments.removeFirst();
         }
-    }
-
-    public List<LineSegment> getSegments() {
-        return this.segments;
-    }
-
-    public int getDeviationId() {
-        return this.deviationId;
-    }
-
-    public LineSource getLineSource() {
-        return this.lineSource;
     }
 }

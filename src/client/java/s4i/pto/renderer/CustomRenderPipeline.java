@@ -1,10 +1,10 @@
 package s4i.pto.renderer;
 
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.minecraft.client.render.RenderLayers;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Vec3d;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import s4i.pto.config.ModConfig;
 import s4i.pto.model.Color4f;
@@ -37,29 +37,29 @@ public class CustomRenderPipeline {
         this.config = ModConfig.getInstance();
     }
 
-    private static Vector3f toVector3f(Vec3d vec3d) {
+    private static Vector3f toVector3f(Vec3 vec3d) {
         return new Vector3f((float) vec3d.x, (float) vec3d.y, (float) vec3d.z);
     }
 
-    public void renderLines(WorldRenderContext context, List<Line> lines, Vec3d offset, Vec3d cameraPos) {
+    public void renderLines(LevelRenderContext context, List<Line> lines, Vec3 offset, Vec3 cameraPos) {
         VertexConsumer vertexConsumer;
         try {
-            vertexConsumer = context.consumers().getBuffer(RenderLayers.lines());
+            vertexConsumer = context.bufferSource().getBuffer(RenderTypes.lines());
         } catch (Exception exception) {
             return;
         }
 
-        MatrixStack matrices = context.matrices();
-        matrices.push();
-        MatrixStack.Entry lastMatrix = matrices.peek();
+        PoseStack matrices = context.poseStack();
+        matrices.pushPose();
+        PoseStack.Pose lastMatrix = matrices.last();
         for (Line line : lines) {
             List<LineSegment> vertices = line.getSegments();
             int i = 0;
             for (LineSegment segment : vertices) {
-                Vec3d startDelta = offset.multiply(calculateOffsetFalloff(vertices.size(), i)).multiply(config.offsetMultiplier);
-                Vec3d endDelta = offset.multiply(calculateOffsetFalloff(vertices.size(), i + 1)).multiply(config.offsetMultiplier);
+                Vec3 startDelta = offset.scale(calculateOffsetFalloff(vertices.size(), i)).scale(config.offsetMultiplier);
+                Vec3 endDelta = offset.scale(calculateOffsetFalloff(vertices.size(), i + 1)).scale(config.offsetMultiplier);
 
-                Vec3d dottedLineDelta = segment.end.subtract(segment.start).multiply(1f - config.dottedLineScale);
+                Vec3 dottedLineDelta = segment.end.subtract(segment.start).scale(1f - config.dottedLineScale);
                 Vector3f start = toVector3f(segment.start.add(startDelta).subtract(cameraPos).add(dottedLineDelta));
                 Vector3f end = toVector3f(segment.end.add(endDelta).subtract(cameraPos));
 
@@ -73,10 +73,10 @@ public class CustomRenderPipeline {
                 addHighlightPointToVertexConsumer(vertexConsumer, lastMatrix, vertices.getLast().end, cameraPos, line.getLineSource());
             }
         }
-        matrices.pop();
+        matrices.popPose();
     }
 
-    private void addHighlightPointToVertexConsumer(VertexConsumer vertexConsumer, MatrixStack.Entry lastMatrix, Vec3d highlightPoint, Vec3d cameraPos,
+    private void addHighlightPointToVertexConsumer(VertexConsumer vertexConsumer, PoseStack.Pose lastMatrix, Vec3 highlightPoint, Vec3 cameraPos,
                                                    LineSource lineSource) {
         Vector3f pos = toVector3f(highlightPoint.subtract(cameraPos));
         Color4f highlightColor = ColorUtils.getHighlightPointColor(config, lineSource);
@@ -93,23 +93,23 @@ public class CustomRenderPipeline {
                 pos.x, pos.y, pos.z - highlightLength);
     }
 
-    private void addLineToVertexConsumerNormalColorWidth(VertexConsumer vertexConsumer, MatrixStack.Entry lastMatrix, float lineWidth, Color4f color,
+    private void addLineToVertexConsumerNormalColorWidth(VertexConsumer vertexConsumer, PoseStack.Pose lastMatrix, float lineWidth, Color4f color,
                                                          Vector3f start, Vector3f end) {
-        vertexConsumer.vertex(lastMatrix, start).normal(lastMatrix, start)
-                .color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
-        vertexConsumer.vertex(lastMatrix,   end).normal(lastMatrix, end)
-                .color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+        vertexConsumer.addVertex(lastMatrix, start).setNormal(lastMatrix, start)
+                .setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+        vertexConsumer.addVertex(lastMatrix,   end).setNormal(lastMatrix, end)
+                .setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
     }
 
-    private void addLineToVertexConsumerNormalColorWidth(VertexConsumer vertexConsumer, MatrixStack.Entry lastMatrix, float lineWidth, Color4f color,
+    private void addLineToVertexConsumerNormalColorWidth(VertexConsumer vertexConsumer, PoseStack.Pose lastMatrix, float lineWidth, Color4f color,
                                                          float startX, float startY, float startZ, float endX, float endY, float endZ) {
-        vertexConsumer.vertex(lastMatrix, startX, startY, startZ).normal(lastMatrix, startX, startY, startZ)
-                .color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
-        vertexConsumer.vertex(lastMatrix, endX, endY, endZ).normal(lastMatrix, endX, endY, endZ)
-                .color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+        vertexConsumer.addVertex(lastMatrix, startX, startY, startZ).setNormal(lastMatrix, startX, startY, startZ)
+                .setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+        vertexConsumer.addVertex(lastMatrix, endX, endY, endZ).setNormal(lastMatrix, endX, endY, endZ)
+                .setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
     }
 
-    public void renderBoxes(WorldRenderContext context, List<RenderBox> boxes, Vec3d cameraPos) {
+    public void renderBoxes(LevelRenderContext context, List<RenderBox> boxes, Vec3 cameraPos) {
         List<RenderBox> filledBoxes = Utils.filterList(boxes, RenderBox::hasFill);
         List<RenderBox> outlineBoxes = Utils.filterList(boxes, RenderBox::hasOutline);
         if (!filledBoxes.isEmpty()) {
@@ -120,69 +120,69 @@ public class CustomRenderPipeline {
         }
     }
 
-    private void renderFilledBoxes(WorldRenderContext context, List<RenderBox> boxes, Vec3d cameraPos) {
+    private void renderFilledBoxes(LevelRenderContext context, List<RenderBox> boxes, Vec3 cameraPos) {
         VertexConsumer boxVertexConsumer;
         try {
-            boxVertexConsumer = context.consumers().getBuffer(RenderLayers.debugFilledBox());
+            boxVertexConsumer = context.bufferSource().getBuffer(RenderTypes.debugFilledBox());
         } catch (Exception exception) {
             return;
         }
-        MatrixStack matrices = context.matrices();
-        matrices.push();
-        MatrixStack.Entry lastMatrix = matrices.peek();
+        PoseStack matrices = context.poseStack();
+        matrices.pushPose();
+        PoseStack.Pose lastMatrix = matrices.last();
 
         for (RenderBox rb : boxes) {
             Color4f color = rb.getFillColor();
             FloatBox box = new FloatBox(rb.getBox(), cameraPos);
             // front
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
 
             // back
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a);
 
             // left
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a);
 
             // right
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
 
             // top
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a);
 
             // bottom
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.maxX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a);
-            boxVertexConsumer.vertex(lastMatrix, box.minX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.maxX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
+            boxVertexConsumer.addVertex(lastMatrix, box.minX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a);
         }
-        matrices.pop();
+        matrices.popPose();
     }
 
-    private void renderOutlinedBoxes(WorldRenderContext context, List<RenderBox> boxes, Vec3d cameraPos) {
+    private void renderOutlinedBoxes(LevelRenderContext context, List<RenderBox> boxes, Vec3 cameraPos) {
         VertexConsumer lineConsumer;
         try {
-            lineConsumer = context.consumers().getBuffer(RenderLayers.lines());
+            lineConsumer = context.bufferSource().getBuffer(RenderTypes.lines());
         } catch (Exception exception) {
             return;
         }
-        MatrixStack matrices = context.matrices();
-        matrices.push();
-        MatrixStack.Entry lastMatrix = matrices.peek();
+        PoseStack matrices = context.poseStack();
+        matrices.pushPose();
+        PoseStack.Pose lastMatrix = matrices.last();
 
         for (RenderBox rb : boxes) {
             float lineWidth = 2.0f;
@@ -190,55 +190,55 @@ public class CustomRenderPipeline {
             FloatBox box = new FloatBox(rb.getBox(), cameraPos);
             // bottom
             lineConsumer
-                    .vertex(lastMatrix, box.maxX, box.minY, box.minZ).normal(lastMatrix, box.maxX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.maxX, box.minY, box.maxZ).normal(lastMatrix, box.maxX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.maxX, box.minY, box.maxZ).normal(lastMatrix, box.maxX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.minY, box.maxZ).normal(lastMatrix, box.minX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.minY, box.maxZ).normal(lastMatrix, box.minX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.minY, box.minZ).normal(lastMatrix, box.minX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.minY, box.minZ).normal(lastMatrix, box.minX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.maxX, box.minY, box.minZ).normal(lastMatrix, box.maxX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                    .addVertex(lastMatrix, box.maxX, box.minY, box.minZ).setNormal(lastMatrix, box.maxX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.maxX, box.minY, box.maxZ).setNormal(lastMatrix, box.maxX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.maxX, box.minY, box.maxZ).setNormal(lastMatrix, box.maxX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.minY, box.maxZ).setNormal(lastMatrix, box.minX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.minY, box.maxZ).setNormal(lastMatrix, box.minX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.minY, box.minZ).setNormal(lastMatrix, box.minX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.minY, box.minZ).setNormal(lastMatrix, box.minX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.maxX, box.minY, box.minZ).setNormal(lastMatrix, box.maxX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
 
             // top
             lineConsumer
-                    .vertex(lastMatrix, box.maxX, box.maxY, box.minZ).normal(lastMatrix, box.maxX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.maxX, box.maxY, box.maxZ).normal(lastMatrix, box.maxX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.maxX, box.maxY, box.maxZ).normal(lastMatrix, box.maxX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.maxY, box.maxZ).normal(lastMatrix, box.minX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.maxY, box.maxZ).normal(lastMatrix, box.minX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.maxY, box.minZ).normal(lastMatrix, box.minX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.maxY, box.minZ).normal(lastMatrix, box.minX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.maxX, box.maxY, box.minZ).normal(lastMatrix, box.maxX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                    .addVertex(lastMatrix, box.maxX, box.maxY, box.minZ).setNormal(lastMatrix, box.maxX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.maxX, box.maxY, box.maxZ).setNormal(lastMatrix, box.maxX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.maxX, box.maxY, box.maxZ).setNormal(lastMatrix, box.maxX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.maxY, box.maxZ).setNormal(lastMatrix, box.minX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.maxY, box.maxZ).setNormal(lastMatrix, box.minX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.maxY, box.minZ).setNormal(lastMatrix, box.minX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.maxY, box.minZ).setNormal(lastMatrix, box.minX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.maxX, box.maxY, box.minZ).setNormal(lastMatrix, box.maxX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
 
             // sides
             lineConsumer
-                    .vertex(lastMatrix, box.minX, box.minY, box.minZ).normal(lastMatrix, box.minX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.maxY, box.minZ).normal(lastMatrix, box.minX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.maxX, box.minY, box.minZ).normal(lastMatrix, box.maxX, box.minY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.maxX, box.maxY, box.minZ).normal(lastMatrix, box.maxX, box.maxY, box.minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.maxX, box.minY, box.maxZ).normal(lastMatrix, box.maxX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.maxX, box.maxY, box.maxZ).normal(lastMatrix, box.maxX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.minY, box.maxZ).normal(lastMatrix, box.minX, box.minY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth)
-                    .vertex(lastMatrix, box.minX, box.maxY, box.maxZ).normal(lastMatrix, box.minX, box.maxY, box.maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                    .addVertex(lastMatrix, box.minX, box.minY, box.minZ).setNormal(lastMatrix, box.minX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.maxY, box.minZ).setNormal(lastMatrix, box.minX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.maxX, box.minY, box.minZ).setNormal(lastMatrix, box.maxX, box.minY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.maxX, box.maxY, box.minZ).setNormal(lastMatrix, box.maxX, box.maxY, box.minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.maxX, box.minY, box.maxZ).setNormal(lastMatrix, box.maxX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.maxX, box.maxY, box.maxZ).setNormal(lastMatrix, box.maxX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.minY, box.maxZ).setNormal(lastMatrix, box.minX, box.minY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth)
+                    .addVertex(lastMatrix, box.minX, box.maxY, box.maxZ).setNormal(lastMatrix, box.minX, box.maxY, box.maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
-        matrices.pop();
+        matrices.popPose();
     }
 
     private double calculateOffsetFalloff(int numberOfLines, int currentLine) {
         return Math.max(0, (numberOfLines - (currentLine + config.offsetFalloffStrength) * config.offsetSmoothnessMultiplier) / numberOfLines);
     }
 
-    public void renderDeviationMarkers(WorldRenderContext context, List<DeviationBox> boxes, Vec3d cameraPos, boolean renderOtherSide) {
+    public void renderDeviationMarkers(LevelRenderContext context, List<DeviationBox> boxes, Vec3 cameraPos, boolean renderOtherSide) {
         VertexConsumer vertexConsumer;
         try {
-            vertexConsumer = context.consumers().getBuffer(RenderLayers.lines());
+            vertexConsumer = context.bufferSource().getBuffer(RenderTypes.lines());
         } catch (Exception exception) {
             return;
         }
 
-        MatrixStack matrices = context.matrices();
-        matrices.push();
-        MatrixStack.Entry lastMatrix = matrices.peek();
+        PoseStack matrices = context.poseStack();
+        matrices.pushPose();
+        PoseStack.Pose lastMatrix = matrices.last();
 
         float markerWidth = 7.0f;
         for (DeviationBox deviationBox : boxes) {
@@ -273,6 +273,6 @@ public class CustomRenderPipeline {
                         box.maxX, box.minY, box.maxZ);
             }
         }
-        matrices.pop();
+        matrices.popPose();
     }
 }

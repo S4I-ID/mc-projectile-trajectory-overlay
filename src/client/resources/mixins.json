@@ -1,11 +1,11 @@
 {
   "required": true,
   "package": "s4i.pto.mixins",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "client": [
     "EntityAccessor",
     "FireworkRocketEntityAccessor",
-    "PersistentProjectileEntityAccessor"
+    "AbstractArrowAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,15 +1,17 @@
 package s4i.pto.model.projectile;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import lombok.Data;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
+@Data
 public class ItemData {
-    public Class<?> clas;
-    public ItemStack stack;
-    public Item item;
+    private Class<?> itemClass;
+    private ItemStack stack;
+    private Item item;
 
-    private ItemData(Class<?> clas, ItemStack stack) {
-        this.clas = clas;
+    private ItemData(Class<?> itemClass, ItemStack stack) {
+        this.itemClass = itemClass;
         this.stack = stack;
         this.item = stack.getItem();
     }

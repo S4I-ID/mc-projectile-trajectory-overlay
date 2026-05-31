@@ -1,20 +1,20 @@
 package s4i.pto.services;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.CrossbowItem;
-import net.minecraft.item.EggItem;
-import net.minecraft.item.EnderPearlItem;
-import net.minecraft.item.ExperienceBottleItem;
-import net.minecraft.item.FishingRodItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.LingeringPotionItem;
-import net.minecraft.item.SnowballItem;
-import net.minecraft.item.SplashPotionItem;
-import net.minecraft.item.ThrowablePotionItem;
-import net.minecraft.item.TridentItem;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.EggItem;
+import net.minecraft.world.item.EnderpearlItem;
+import net.minecraft.world.item.ExperienceBottleItem;
+import net.minecraft.world.item.FishingRodItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.LingeringPotionItem;
+import net.minecraft.world.item.SnowballItem;
+import net.minecraft.world.item.SplashPotionItem;
+import net.minecraft.world.item.ThrowablePotionItem;
+import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.phys.Vec3;
 import s4i.pto.model.projectile.ItemData;
 import s4i.pto.model.projectile.ProjectileData;
 import s4i.pto.services.initializers.ModdedProjectileItemInitializer;
@@ -59,7 +59,7 @@ public class ItemRegistryService {
         vanillaDataMap.put(CrossbowItem.class, VanillaProjectileItemInitializer.Crossbow());
         vanillaDataMap.put(TridentItem.class, VanillaProjectileItemInitializer.Trident());
         vanillaDataMap.put(EggItem.class, VanillaProjectileItemInitializer.Egg());
-        vanillaDataMap.put(EnderPearlItem.class, VanillaProjectileItemInitializer.EnderPearl());
+        vanillaDataMap.put(EnderpearlItem.class, VanillaProjectileItemInitializer.EnderPearl());
         vanillaDataMap.put(ExperienceBottleItem.class, VanillaProjectileItemInitializer.ExperienceBottle());
         vanillaDataMap.put(SplashPotionItem.class, VanillaProjectileItemInitializer.ThrowablePotion());
         vanillaDataMap.put(LingeringPotionItem.class, VanillaProjectileItemInitializer.ThrowablePotion());
@@ -67,7 +67,7 @@ public class ItemRegistryService {
         vanillaDataMap.put(FishingRodItem.class, VanillaProjectileItemInitializer.FishingRod());
 
         moddedDataMap = new HashMap<>();
-        throwableSet = new HashSet<>(List.of(EggItem.class, ExperienceBottleItem.class, EnderPearlItem.class, LingeringPotionItem.class,
+        throwableSet = new HashSet<>(List.of(EggItem.class, ExperienceBottleItem.class, EnderpearlItem.class, LingeringPotionItem.class,
                 SnowballItem.class, ThrowablePotionItem.class, FishingRodItem.class));
         chargingSet = new HashSet<>(List.of(TridentItem.class, BowItem.class));
         magazineSet = new HashSet<>(List.of(CrossbowItem.class));
@@ -79,14 +79,14 @@ public class ItemRegistryService {
      * @param entity firingEntity to check if holding corresponding items
      * @return item's class or null if nonexistent
      */
-    public ItemData getProjectileItemClassIfHeldByEntity(PlayerEntity entity) {
-        ItemStack mainHandStack = entity.getMainHandStack();
+    public ItemData getProjectileItemClassIfHeldByEntity(Player entity) {
+        ItemStack mainHandStack = entity.getMainHandItem();
         Class<?> mainHandClass = getItemClassFromRegistry(mainHandStack.getItem());
         if (mainHandClass != null) {
             return ItemData.of(mainHandClass, mainHandStack);
         }
 
-        ItemStack offHandStack = entity.getOffHandStack();
+        ItemStack offHandStack = entity.getOffhandItem();
         Class<?> offHandClass = getItemClassFromRegistry(offHandStack.getItem());
         if (offHandClass != null) {
             return ItemData.of(offHandClass, offHandStack);
@@ -113,7 +113,7 @@ public class ItemRegistryService {
     /**
      * @return if mod should estimate projectile trajectory estimation line
      */
-    public boolean shouldDisplayLine(PlayerEntity firingEntity, Class<?> clas) {
+    public boolean shouldDisplayLine(Player firingEntity, Class<?> clas) {
         if (throwableSet.contains(clas)) {
             return true;
         }
@@ -129,16 +129,16 @@ public class ItemRegistryService {
      * <p> Needed due to the way item offset is handled internally </p>
      *
      * @param firingEntity firingEntity holding item
-     * @param player current client
+     * @param isPlayer is current client
      * @param itemData currently held item info
      *
-     * @return offset as {@link Vec3d Vec3d(x,y,z)}
+     * @return offset as {@link Vec3 Vec3d(x,y,z)}
      *
-     * @see net.minecraft.entity.Entity#getHandPosOffset
+     * @see net.minecraft.world.entity.Entity#getHandHoldingItemAngle(Item)
      */
-    public Vec3d getFirstPersonCameraOffset(PlayerEntity firingEntity, boolean isPlayer, ItemData itemData) {
-        double multiplier = itemData.clas.equals(FishingRodItem.class) ? 0.2f : 1.0f;
-        return itemData.item != null && isPlayer ? firingEntity.getHandPosOffset(itemData.item).multiply(multiplier) : Vec3d.ZERO;
+    public Vec3 getFirstPersonCameraOffset(Player firingEntity, boolean isPlayer, ItemData itemData) {
+        double multiplier = itemData.getItemClass().equals(FishingRodItem.class) ? 0.2f : 1.0f;
+        return itemData.getItem() != null && isPlayer ? firingEntity.getHandHoldingItemAngle(itemData.getItem()).scale(multiplier) : Vec3.ZERO;
     }
 
     /**
@@ -149,11 +149,11 @@ public class ItemRegistryService {
      * @return returns null if can't find data
      * @see VanillaProjectileItemInitializer
      */
-    public List<ProjectileData> getProjectileDataFromHeldItem(float tickProgress, PlayerEntity firingEntity, ItemData heldItem) {
-        if (!moddedSet.contains(heldItem.clas)) {
-            return vanillaDataMap.getOrDefault(heldItem.clas, VanillaProjectileItemInitializer.Null()).init(tickProgress, firingEntity, heldItem);
+    public List<ProjectileData> getProjectileDataFromHeldItem(float tickProgress, Player firingEntity, ItemData heldItem) {
+        if (!moddedSet.contains(heldItem.getItemClass())) {
+            return vanillaDataMap.getOrDefault(heldItem.getItemClass(), VanillaProjectileItemInitializer.Null()).init(tickProgress, firingEntity, heldItem);
         } else {
-            return moddedDataMap.getOrDefault(heldItem.clas, ModdedProjectileItemInitializer.Null()).init(tickProgress, firingEntity, heldItem);
+            return moddedDataMap.getOrDefault(heldItem.getItemClass(), ModdedProjectileItemInitializer.Null()).init(tickProgress, firingEntity, heldItem);
         }
     }
 

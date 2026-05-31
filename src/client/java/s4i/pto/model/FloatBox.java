@@ -1,7 +1,7 @@
 package s4i.pto.model;
 
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import s4i.pto.model.simulation.DeviationBox;
 
 public class FloatBox {
@@ -12,7 +12,7 @@ public class FloatBox {
     public final float maxY;
     public final float maxZ;
 
-    public FloatBox(Box box) {
+    public FloatBox(AABB box) {
         this.minX = (float) box.minX;
         this.minY = (float) box.minY;
         this.minZ = (float) box.minZ;
@@ -21,8 +21,8 @@ public class FloatBox {
         this.maxZ = (float) box.maxZ;
     }
 
-    public FloatBox(Box box, Vec3d cameraPos) {
-        Box offsetBox = box.offset(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+    public FloatBox(AABB box, Vec3 cameraPos) {
+        AABB offsetBox = box.move(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         this.minX = (float) offsetBox.minX;
         this.minY = (float) offsetBox.minY;
         this.minZ = (float) offsetBox.minZ;
@@ -31,7 +31,7 @@ public class FloatBox {
         this.maxZ = (float) offsetBox.maxZ;
     }
 
-    public FloatBox(DeviationBox box, Vec3d cameraPos) {
+    public FloatBox(DeviationBox box, Vec3 cameraPos) {
         this.minX = (float) (box.minX - cameraPos.x);
         this.minY = (float) (box.minY - cameraPos.y);
         this.minZ = (float) (box.minZ - cameraPos.z);

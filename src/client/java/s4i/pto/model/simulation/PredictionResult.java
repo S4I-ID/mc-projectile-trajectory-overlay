@@ -1,17 +1,20 @@
 package s4i.pto.model.simulation;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
+
+import lombok.Getter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Getter
 public class PredictionResult {
-    public List<Line> lines;
-    public Map<Entity, RenderBox> entityMap;
-    public Map<BlockPos, RenderBox> blockMap;
+    private final List<Line> lines;
+    private final Map<Entity, RenderBox> entityMap;
+    private final Map<BlockPos, RenderBox> blockMap;
 
     public PredictionResult() {
         this.lines = new ArrayList<>();

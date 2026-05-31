@@ -8,7 +8,7 @@ public class ModUtils {
     /**
      * Checks the Fabric API if certain mod is loaded
      * @deprecated will implement if mod support is asked for
-     * @return true/false
+     * @return boolean
      */
     @Deprecated
     public static boolean isModLoaded() {

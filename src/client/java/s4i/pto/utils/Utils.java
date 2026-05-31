@@ -1,10 +1,11 @@
 package s4i.pto.utils;
 
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -13,12 +14,9 @@ public class Utils {
     public static <T> List<T> filterList(List<T> list, Predicate<T> predicate) {
         return Stream.ofNullable(list)
                 .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
                 .filter(predicate)
                 .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    public static <T> List<T> collectionToList(Collection<T> collection) {
-        return new ArrayList<>(collection);
     }
 
     /**
@@ -33,12 +31,12 @@ public class Utils {
     }
 
     /**
-     * Deep copy Vec3d object
+     * Deep copy Vec3 object
      * @param vec3d object to copy
      * @return copied object
      */
-    public static Vec3d copyVec3d(Vec3d vec3d) {
-        return new Vec3d(vec3d.x, vec3d.y, vec3d.z);
+    public static Vec3 copyVec3d(Vec3 vec3d) {
+        return new Vec3(vec3d.x, vec3d.y, vec3d.z);
     }
 
     public static boolean doubleBetween(double fl, double min, double max) {

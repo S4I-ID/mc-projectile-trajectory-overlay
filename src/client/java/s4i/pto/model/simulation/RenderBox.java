@@ -1,17 +1,19 @@
 package s4i.pto.model.simulation;
 
-import net.minecraft.util.math.Box;
+import lombok.Getter;
+import net.minecraft.world.phys.AABB;
 import s4i.pto.model.Color4f;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class RenderBox {
-    private Box box;
-    private List<Color4f> fillColors;
-    private List<Color4f> outlineColors;
+    private final AABB box;
+    private final List<Color4f> fillColors;
+    private final List<Color4f> outlineColors;
 
-    public RenderBox(Box box, Color4f fillColor, Color4f outlineColor) {
+    public RenderBox(AABB box, Color4f fillColor, Color4f outlineColor) {
         this.box = box;
         this.fillColors = new ArrayList<>();
         if (fillColor != null) {
@@ -24,14 +26,10 @@ public class RenderBox {
         }
     }
 
-    public RenderBox(Box box) {
+    public RenderBox(AABB box) {
         this.box = box;
         this.fillColors = new ArrayList<>();
         this.outlineColors = new ArrayList<>();
-    }
-
-    public Box getBox() {
-        return box;
     }
 
     public boolean hasFill() {

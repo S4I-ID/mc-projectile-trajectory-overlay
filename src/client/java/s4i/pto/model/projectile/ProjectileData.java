@@ -1,43 +1,59 @@
 package s4i.pto.model.projectile;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Data;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import s4i.pto.model.Operation;
 import s4i.pto.utils.Utils;
 
 import java.util.List;
 
+@Data
+@AllArgsConstructor
+@Builder
 public class ProjectileData {
-    private int deviationId;
-    private Vec3d velocity;
-    private Vec3d velocityMin;
-    private Vec3d velocityMax;
+    @Default
+    private int deviationId = -1;
+    private Vec3 velocity;
+    private Vec3 velocityMin;
+    private Vec3 velocityMax;
     private float yaw;
     private float pitch;
-    private Vec3d position;
-    private Vec3d lastPosition;
-    private Vec3d gravityVelocity;
+    private Vec3 position;
+    private Vec3 lastPosition;
+    private Vec3 gravityVelocity;
     private float airDrag;
     private float waterDrag;
-    private float charge;
-    private float inaccuracy;
+    @Default
+    private float charge = 1.0f;
+    @Default
+    private float inaccuracy = 0f;
     private List<Operation> operationOrder;
     private Class<?> itemClassFiredFrom;
     private Entity entity;
-    private boolean isInFluid;
-    private int pierces;
-    private int ticksLeft;
-    private int tickDeviation;
-    private int state;
-    private boolean forceHighlightBlock;
-    private boolean isExplosive;
-    private int explosions;
-
-    private ProjectileData() {}
+    @Default
+    private boolean isInFluid = false;
+    @Default
+    private int pierces = 0;
+    @Default
+    private int ticksLeft = 9999;
+    @Default
+    private int tickDeviation = 0;
+    @Default
+    private int state = 0;
+    @Default
+    private boolean forceHighlightBlock = false;
+    @Default
+    private boolean isExplosive = false;
+    @Default
+    private int explosions = 0;
 
     public ProjectileData(ProjectileData other, int deviationId, boolean isMinDeviation) {
         this.deviationId = deviationId;
-        Vec3d velocity;
+        Vec3 velocity;
         int ticksLeft;
         if (deviationId > -1) {
             velocity = isMinDeviation ? other.velocityMin : other.velocityMax;
@@ -45,14 +61,14 @@ public class ProjectileData {
         } else {
             velocity = other.velocity;
             ticksLeft = other.ticksLeft;
-            this.velocityMin = other.velocityMin;
-            this.velocityMax = other.velocityMax;
+            this.velocityMin = Utils.copyVec3d(other.velocityMin);
+            this.velocityMax = Utils.copyVec3d(other.velocityMax);
         }
         this.velocity = Utils.copyVec3d(velocity);
         this.yaw = other.yaw;
         this.pitch = other.pitch;
         this.position = Utils.copyVec3d(other.position);
-        this.lastPosition = other.lastPosition;
+        this.lastPosition = Utils.copyVec3d(other.lastPosition);
         this.gravityVelocity = other.gravityVelocity;
         this.airDrag = other.airDrag;
         this.waterDrag = other.waterDrag;
@@ -75,7 +91,7 @@ public class ProjectileData {
         this.pierces = this.pierces - 1;
     }
 
-    public void addToPosition(Vec3d relativePos) {
+    public void addToPosition(Vec3 relativePos) {
         this.position = position.add(relativePos);
     }
 
@@ -83,260 +99,24 @@ public class ProjectileData {
         this.ticksLeft = this.ticksLeft - 1;
     }
 
-
-    public int getPierces() {
-        return this.pierces;
-    }
-
-    public Vec3d getLastPosition() {
-        return this.lastPosition;
-    }
-
-    public void setLastPosition(Vec3d lastPosition) {
-        this.lastPosition = lastPosition;
-    }
-
-    public boolean isExplosive() {
-        return this.isExplosive;
-    }
-
-    public int getExplosions() {
-        return this.explosions;
-    }
-
-    public boolean isForceHighlightBlock() {
-        return this.forceHighlightBlock;
-    }
-
-    public int getState() {
-        return this.state;
-    }
-
-    public void setState(int state) {
-        this.state = state;
-    }
-
-    public int getTicksLeft() {
-        return this.ticksLeft;
-    }
-
-    public int getDeviationId() {
-        return this.deviationId;
-    }
-
     public boolean isDeviation() {
-        return this.deviationId > -1;
+        return deviationId > -1;
     }
 
-    public boolean isInFluid() {
-        return isInFluid;
-    }
-
-    public void setIsInFluid(boolean isInFluid) {
-        this.isInFluid = isInFluid;
-    }
-
-    public Entity getEntity() {
-        return entity;
-    }
-
-    public void setEntity(Entity entity) {
-        this.entity = entity;
-    }
-
-    public Vec3d getVelocity() {
-        return velocity;
-    }
-
-    public void setVelocity(Vec3d velocity) {
-        this.velocity = velocity;
-    }
-
-    public float getYaw() {
-        return yaw;
-    }
-
-    public void setYaw(float yaw) {
-        this.yaw = yaw;
-    }
-
-    public float getPitch() {
-        return pitch;
-    }
-
-    public void setPitch(float pitch) {
-        this.pitch = pitch;
-    }
-
-    public Vec3d getPosition() {
-        return position;
-    }
-
-    public Vec3d getGravityVelocity() {
-        return gravityVelocity;
-    }
-
-    public float getAirDrag() {
-        return airDrag;
-    }
-
-    public float getWaterDrag() {
-        return waterDrag;
-    }
-
-    public float getCharge() {
-        return charge;
-    }
-
-    public List<Operation> getOperationOrder() {
-        return operationOrder;
-    }
-
-    public Class<?> getItemClassFiredFrom() {
-        return itemClassFiredFrom;
-    }
-
-    public void setItemClassFiredFrom(Class<?> itemClassFiredFrom) {
-        this.itemClassFiredFrom = itemClassFiredFrom;
-    }
-
-
-
-    private ProjectileData(Builder builder) {
-        this.deviationId = builder.deviationId;
-        this.velocity = builder.projectileSpawnData.getVelocity();
-        this.velocityMin = builder.projectileSpawnData.getVelocityWithMaxNegativeDeviation();
-        this.velocityMax = builder.projectileSpawnData.getVelocityWithMaxPositiveDeviation();
-        this.yaw = builder.projectileSpawnData.getYaw();
-        this.pitch = builder.projectileSpawnData.getPitch();
-        this.position = builder.position;
-        this.lastPosition = builder.position;
-        this.gravityVelocity = builder.gravityVelocity;
-        this.airDrag = builder.airDrag;
-        this.waterDrag = builder.waterDrag;
-        this.charge = builder.charge;
-        this.inaccuracy = builder.inaccuracy;
-        this.operationOrder = builder.operationOrder;
-        this.itemClassFiredFrom = builder.itemClassFrom;
-        this.entity = builder.entity;
-        this.isInFluid = builder.isInFluid;
-        this.pierces = builder.pierces;
-        this.ticksLeft = builder.ticksLeft;
-        this.tickDeviation = builder.tickDeviation;
-        this.state = builder.state;
-        this.forceHighlightBlock = builder.forceHighlightBlock;
-        this.isExplosive = builder.isExplosive;
-        this.explosions = builder.explosions;
-    }
-
-    public static class Builder {
-        private final int deviationId = -1;
-        private ProjectileSpawnData projectileSpawnData;
-        private Vec3d position;
-        private Vec3d gravityVelocity;
-        private float airDrag;
-        private float waterDrag;
-        private float charge = 1.0f;
-        private float inaccuracy = 0f;
-        private List<Operation> operationOrder;
-        private Class<?> itemClassFrom;
-        private Entity entity;
-        private final boolean isInFluid = false;
-        private int pierces = 0;
-        private int ticksLeft = 9999;
-        private int tickDeviation = 0;
-        private int state = 0;
-        private boolean forceHighlightBlock = false;
-        private boolean isExplosive = false;
-        private int explosions = 0;
-
-        public Builder projectileSpawnData(ProjectileSpawnData projectileSpawnData) {
-            this.projectileSpawnData = projectileSpawnData;
+    public static class ProjectileDataBuilder {
+        public ProjectileDataBuilder projectileSpawnData(ProjectileSpawnData projectileSpawnData) {
+            this.velocity = projectileSpawnData.getVelocity();
+            this.velocityMin = projectileSpawnData.getVelocityWithMaxNegativeDeviation();
+            this.velocityMax = projectileSpawnData.getVelocityWithMaxPositiveDeviation();
+            this.yaw = projectileSpawnData.getYaw();
+            this.pitch = projectileSpawnData.getPitch();
             return this;
         }
 
-        public Builder position(Vec3d position) {
+        public ProjectileDataBuilder position(Vec3 position) {
             this.position = position;
+            this.lastPosition = position;
             return this;
-        }
-
-        public Builder gravityVelocity(Vec3d gravityVelocity) {
-            this.gravityVelocity = gravityVelocity;
-            return this;
-        }
-
-        public Builder airDrag(float airDrag) {
-            this.airDrag = airDrag;
-            return this;
-        }
-
-        public Builder waterDrag(float waterDrag) {
-            this.waterDrag = waterDrag;
-            return this;
-        }
-
-        public Builder charge(float charge) {
-            this.charge = charge;
-            return this;
-        }
-
-        public Builder inaccuracy(float inaccuracy) {
-            this.inaccuracy = inaccuracy;
-            return this;
-        }
-
-        public Builder operationOrder(List<Operation> operationOrder) {
-            this.operationOrder = operationOrder;
-            return this;
-        }
-
-        public Builder itemClassFrom(Class<?> itemClassFrom) {
-            this.itemClassFrom = itemClassFrom;
-            return this;
-        }
-
-        public Builder entity(Entity entity) {
-            this.entity = entity;
-            return this;
-        }
-
-        public Builder pierces(int pierces) {
-            this.pierces = pierces;
-            return this;
-        }
-
-        public Builder ticksLeft(int ticksLeft) {
-            this.ticksLeft = ticksLeft;
-            return this;
-        }
-
-        public Builder tickDeviation(int tickDeviation) {
-            this.tickDeviation = tickDeviation;
-            return this;
-        }
-
-        public Builder state(int state) {
-            this.state = state;
-            return this;
-        }
-
-        public Builder forceHighlightBlock(boolean forceHighlightBlock) {
-            this.forceHighlightBlock = forceHighlightBlock;
-            return this;
-        }
-
-        public Builder isExplosive(boolean explosive) {
-            isExplosive = explosive;
-            return this;
-        }
-
-        public Builder explosions(int explosions) {
-            this.explosions = explosions;
-            return this;
-        }
-
-        public ProjectileData build() {
-            return new ProjectileData(this);
         }
     }
 }

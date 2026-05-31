@@ -79,4 +79,7 @@ public class Constants {
             List.of(POSITION, ENTITY_COLLISION, BLOCK_RAYCAST, LIFETIME_UPDATE);
     public static final List<Operation> FISHING_BOBBER_OPERATION_ORDER =
             List.of(FISHING_BOBBER, VELOCITY, BLOCK_COLLISION, ROTATION, DRAG, POSITION, UPDATE_WATER_STATE, ENTITY_COLLISION, BLOCK_RAYCAST);
+
+    public static final float DEG_TO_RAD = 0.0174532925199432944f;
+    public static final float RAD_TO_DEG = 57.295779513082320876f;
 }
